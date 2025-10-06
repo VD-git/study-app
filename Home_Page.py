@@ -4,9 +4,9 @@ from config import calendar_options, custom_css
 from utils import update_event_colors, SQLConnection
 from datetime import datetime, date, timedelta
 
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# __import__('pysqlite3')
+# import sys
+# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 st.set_page_config(page_title="Study Calendar", page_icon="📆")
 
