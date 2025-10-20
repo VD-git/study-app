@@ -3,6 +3,7 @@ from streamlit_calendar import calendar
 from config import calendar_options, custom_css
 from utils import update_event_colors, SQLConnection
 from datetime import datetime, date, timedelta
+import os
 
 # __import__('pysqlite3')
 # import sys
@@ -11,6 +12,7 @@ from datetime import datetime, date, timedelta
 st.set_page_config(page_title="Study Calendar", page_icon="📆")
 
 PERIODS = ['D0', 'D3', 'D9', 'D30', 'D45', 'D90', 'D180']
+st.write(os.environ)
 
 # if st.session_state.get("events") is None:
 #     st.session_state.conn = SQLConnection()
