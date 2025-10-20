@@ -47,16 +47,16 @@ jobs:
     - name: Deploy to Azure Container Apps
       uses: azure/container-apps-deploy-action@v1
       with:
-          imageToDeploy: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
-          resourceGroup:  ${{ env.RESOURCE_GROUP }}
-          containerAppName: ${{ env.CONTAINER_APP_NAME }}
-          registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
-          registryUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-          environmentVariables: |
-              DB_USER=${{ secrets.DB_USER }}
-              DB_PORT=${{ secrets.DB_PORT }}
-              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-              DB_NAME=${{ secrets.DB_NAME }}
-              DB_HOST=${{ secrets.DB_HOST }}
+        imageToDeploy: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
+        resourceGroup:  ${{ env.RESOURCE_GROUP }}
+        containerAppName: ${{ env.CONTAINER_APP_NAME }}
+        registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+        registryUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        registryPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+        environmentVariables: |
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=${{ secrets.DB_HOST }}
               
