@@ -43,11 +43,13 @@ jobs:
 
     - name: Test app (local test)
       run: |
-          echo "teste1"
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:8501
-          echo "teste2"
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:8501/health
-          exit 1
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8501)
+          if [ "$status" -ne 200 ]; then
+              echo "Health check failed! Expected HTTP 200. Got $status"
+              exit 1
+          else
+              echo "Status $status"
+          fi
 
     - name: Clean container (local test)
       run: |
