@@ -33,16 +33,16 @@ jobs:
           call: check
 
     - name: Build Docker image (local test)
-        run: |
+      run: |
           docker build -t containerapp:stage .
 
     - name: Run container for test
-        run: |
+      run: |
           docker run -d -p 8501:8501 --name localtest containerapp:stage
           sleep 10
 
     - name: Test app health
-        run: |
+      run: |
           echo "teste1"
           curl http://localhost:8501
           echo "teste2"
