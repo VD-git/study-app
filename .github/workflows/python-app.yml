@@ -25,6 +25,30 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Validate build configuration
+      uses: docker/build-push-action@v6
+      with:
+          context: .
+          file: ./Dockerfile
+          call: check
+
+    - name: Build Docker image (local test)
+        run: |
+          docker build -t containerapp:stage .
+
+    - name: Run container for test
+        run: |
+          docker run -d -p 8501:8501 --name localtest containerapp:stage
+          sleep 10
+
+    - name: Test app health
+        run: |
+          echo "teste1"
+          curl http://localhost:8501
+          echo "teste2"
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:8501/health
+          exit 1
+
     - name: Log in to ACR
       uses: docker/login-action@v3
       with:
@@ -36,7 +60,9 @@ jobs:
       uses: docker/build-push-action@v6
       with:
           push: true
-          tags: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
+          tags: |
+              ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
+              ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:latest
           file: ./Dockerfile
 
     - name: Azure Login
