@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages2
-    CONTAINER_APP_NAME: containerapp2
+    AZURE_CONTAINER_REGISTRY: containerappimages3
+    CONTAINER_APP_NAME: containerapp3
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -118,6 +118,17 @@ jobs:
               echo "Container does not exist"
               az containerapp env create --name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
           fi
+
+          az role assignment create \
+              --assignee $(az containerapp identity show \
+                --name ${{ env.CONTAINER_APP_NAME }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --query principalId -o tsv) \
+              --role acrpull \
+              --scope $(az acr show \
+                --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --query id -o tsv)
 
           az containerapp create \
               --name ${{ env.CONTAINER_APP_NAME }} \
