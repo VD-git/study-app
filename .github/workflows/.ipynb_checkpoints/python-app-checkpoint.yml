@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages5
-    CONTAINER_APP_NAME: containerapp5
+    AZURE_CONTAINER_REGISTRY: containerappimages6
+    CONTAINER_APP_NAME: containerapp6
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -126,6 +126,7 @@ jobs:
               --image mcr.microsoft.com/azuredocs/containerapps-helloworld:latest \
               --target-port 80 \
               --ingress external \
+              --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
               --registry-identity system \
               --query properties.configuration.ingress.fqdn \
               --output tsv
