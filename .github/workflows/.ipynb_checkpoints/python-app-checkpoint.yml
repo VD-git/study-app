@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages10
-    CONTAINER_APP_NAME: containerapp10
+    AZURE_CONTAINER_REGISTRY: containerappimages11
+    CONTAINER_APP_NAME: containerapp11
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -133,7 +133,7 @@ jobs:
                     DB_PORT=${{ secrets.DB_PORT }}\
                     DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
                     DB_NAME=${{ secrets.DB_NAME }}\
-                    DB_HOST=${{ secrets.DB_HOST }}
+                    DB_HOST=${{ secrets.DB_HOST }}\
               --query properties.configuration.ingress.fqdn \
               --output tsv
 
