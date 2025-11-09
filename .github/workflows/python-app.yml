@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages6
-    CONTAINER_APP_NAME: containerapp6
+    AZURE_CONTAINER_REGISTRY: containerappimages7
+    CONTAINER_APP_NAME: containerapp7
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -131,31 +131,31 @@ jobs:
               --query properties.configuration.ingress.fqdn \
               --output tsv
 
-            az role assignment create \
-              --assignee $(az containerapp identity show \
-                --name ${{ env.CONTAINER_APP_NAME }} \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
-                --query principalId -o tsv) \
-              --role acrpull \
-              --scope $(az acr show \
-                --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
-                --resource-group ${{ env.RESOURCE_GROUP }} \
-                --query id -o tsv)
+            # az role assignment create \
+            #   --assignee $(az containerapp identity show \
+            #     --name ${{ env.CONTAINER_APP_NAME }} \
+            #     --resource-group ${{ env.RESOURCE_GROUP }} \
+            #     --query principalId -o tsv) \
+            #   --role acrpull \
+            #   --scope $(az acr show \
+            #     --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
+            #     --resource-group ${{ env.RESOURCE_GROUP }} \
+            #     --query id -o tsv)
 
-            az containerapp update \
-              --name ${{ env.CONTAINER_APP_NAME }} \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
-              --target-port ${{ env.PORT }} \
-              --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
-              --env-vars \
-                    DB_USER=${{ secrets.DB_USER }}\
-                    DB_PORT=${{ secrets.DB_PORT }}\
-                    DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
-                    DB_NAME=${{ secrets.DB_NAME }}\
-                    DB_HOST=${{ secrets.DB_HOST }}
-              --query properties.configuration.ingress.fqdn \
-              --output tsv
+            # az containerapp update \
+            #   --name ${{ env.CONTAINER_APP_NAME }} \
+            #   --resource-group ${{ env.RESOURCE_GROUP }} \
+            #   --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
+            #   --target-port ${{ env.PORT }} \
+            #   --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
+            #   --env-vars \
+            #         DB_USER=${{ secrets.DB_USER }}\
+            #         DB_PORT=${{ secrets.DB_PORT }}\
+            #         DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
+            #         DB_NAME=${{ secrets.DB_NAME }}\
+            #         DB_HOST=${{ secrets.DB_HOST }}
+            #   --query properties.configuration.ingress.fqdn \
+            #   --output tsv
 
     # - name: Deploy to Azure Container Apps
     #   uses: azure/container-apps-deploy-action@v1
