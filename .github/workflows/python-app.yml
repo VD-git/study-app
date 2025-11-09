@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages
-    CONTAINER_APP_NAME: containerapp
+    AZURE_CONTAINER_REGISTRY: containerappimages2
+    CONTAINER_APP_NAME: containerapp2
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
