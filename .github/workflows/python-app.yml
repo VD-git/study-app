@@ -2,7 +2,7 @@ name: Container Apps
 
 on:
   push:
-    branches: [ "deploy", "master" ]
+    branches: [ "deploy" ]
 
 env:
     AZURE_CONTAINER_REGISTRY: containerappimages
