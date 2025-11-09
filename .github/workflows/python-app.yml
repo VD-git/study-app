@@ -8,6 +8,7 @@ env:
     AZURE_CONTAINER_REGISTRY: containerappimages
     CONTAINER_APP_NAME: containerapp
     RESOURCE_GROUP: container
+    LOCATION: eastus2
 
 jobs:
   build:
@@ -67,9 +68,9 @@ jobs:
           inlineScript: |
               az account list -o table
               echo "Checking if ACR $ACR_NAME exists..."
-              if ! az acr show --name $ACR_NAME --resource-group $ACR_RESOURCE_GROUP &>/dev/null; then
+              if ! az acr show --name ${{ env.AZURE_CONTAINER_REGISTRY }} --resource-group ${{ env.RESOURCE_GROUP }} &>/dev/null; then
                   echo "ACR not found. Creating..."
-                  az acr create --name $ACR_NAME --resource-group $ACR_RESOURCE_GROUP --sku Basic --location $LOCATION
+                  az acr create --name ${{ env.AZURE_CONTAINER_REGISTRY }} --resource-group ${{ env.RESOURCE_GROUP }} --sku Basic --location ${{ env.LOCATION }}
               else
                   echo "ACR already exists."
               fi
