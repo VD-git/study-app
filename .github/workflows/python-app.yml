@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages3
-    CONTAINER_APP_NAME: containerapp3
+    AZURE_CONTAINER_REGISTRY: containerappimages4
+    CONTAINER_APP_NAME: containerapp4
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -119,7 +119,27 @@ jobs:
               az containerapp env create --name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
           fi
 
-          az role assignment create \
+          az containerapp create \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --environment ${{ env.CONTAINER_APP_NAME }} \
+              --image mcr.microsoft.com/azuredocs/containerapps-helloworld:latest \
+              # --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
+              # --target-port ${{ env.PORT }} \
+              --target-port 80 \
+              --ingress external \
+              # --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
+              --registry-identity system \
+              # --env-vars \
+              #       DB_USER=${{ secrets.DB_USER }}\
+              #       DB_PORT=${{ secrets.DB_PORT }}\
+              #       DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
+              #       DB_NAME=${{ secrets.DB_NAME }}\
+              #       DB_HOST=${{ secrets.DB_HOST }}
+              --query properties.configuration.ingress.fqdn \
+              --output tsv
+
+            az role assignment create \
               --assignee $(az containerapp identity show \
                 --name ${{ env.CONTAINER_APP_NAME }} \
                 --resource-group ${{ env.RESOURCE_GROUP }} \
@@ -130,15 +150,12 @@ jobs:
                 --resource-group ${{ env.RESOURCE_GROUP }} \
                 --query id -o tsv)
 
-          az containerapp create \
+            az containerapp update \
               --name ${{ env.CONTAINER_APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --environment ${{ env.CONTAINER_APP_NAME }} \
               --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
               --target-port ${{ env.PORT }} \
-              --ingress external \
               --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
-              --registry-identity system \
               --env-vars \
                     DB_USER=${{ secrets.DB_USER }}\
                     DB_PORT=${{ secrets.DB_PORT }}\
