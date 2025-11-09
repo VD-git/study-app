@@ -78,7 +78,7 @@ jobs:
       run: |
           az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
           az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table
-          az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
+          # az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
 
     - name: Build and push container image to ACR
       uses: docker/build-push-action@v6
