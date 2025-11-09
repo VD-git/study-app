@@ -109,9 +109,9 @@ jobs:
     - name: Evaluating ContainerApps
       run: |
           containerapps=$(az containerapp list --resource-group container --output table)
-          echo "$container_apps"
+          echo "$containerapps"
 
-          if echo "$container_apps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+          if echo "$containerapps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
               echo "Container exists: ${{ env.CONTAINER_APP_NAME }}"
           else
               echo "Container does not exist"
