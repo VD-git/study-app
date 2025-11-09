@@ -109,7 +109,7 @@ jobs:
 
     - name: Evaluating ContainerApps
       run: |
-          containerapps=$(az containerapp list --resource-group container --output table)
+          containerapps=$(az containerapp env list --resource-group container --output table)
           echo "$containerapps"
 
           if echo "$containerapps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
@@ -128,6 +128,12 @@ jobs:
               --ingress external \
               --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
               --registry-identity system \
+              --env-vars \
+                    DB_USER=${{ secrets.DB_USER }}\
+                    DB_PORT=${{ secrets.DB_PORT }}\
+                    DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
+                    DB_NAME=${{ secrets.DB_NAME }}\
+                    DB_HOST=${{ secrets.DB_HOST }}
               --query properties.configuration.ingress.fqdn \
               --output tsv
 
