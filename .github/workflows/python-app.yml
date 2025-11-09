@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages9
-    CONTAINER_APP_NAME: containerapp9
+    AZURE_CONTAINER_REGISTRY: containerappimages10
+    CONTAINER_APP_NAME: containerapp10
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -152,7 +152,6 @@ jobs:
               --name ${{ env.CONTAINER_APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
-              --query properties.configuration.ingress.fqdn \
               --output tsv
 
     # - name: Deploy to Azure Container Apps
