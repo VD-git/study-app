@@ -77,8 +77,19 @@ jobs:
     - name: Log in to ACR (Before Deploy)
       run: |
           az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
-          az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table
-          # az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
+
+          repo_table=$(az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table)
+          echo "$repo_table"
+
+          if echo "$repo_table" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+              echo "Repository found: ${{ env.CONTAINER_APP_NAME }}"
+              az acr repository show-tags \
+                --name "${{ env.AZURE_CONTAINER_REGISTRY }}" \
+                --repository "${{ env.CONTAINER_APP_NAME }}" \
+                --output table
+          else
+              echo "Repository not found or no images available."
+          fi
 
     - name: Build and push container image to ACR
       uses: docker/build-push-action@v6
@@ -94,6 +105,17 @@ jobs:
           az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
           az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table
           az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
+
+    - name: Evaluating ContainerApps
+      run: |
+          containerapps=$(az containerapp list --resource-group container --output table)
+          echo "$container_apps"
+
+          if echo "$container_apps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+              echo "Container exists: ${{ env.CONTAINER_APP_NAME }}"
+          else
+              echo "Container does not exist"
+          fi
 
     # - name: Deploy to Azure Container Apps
     #   uses: azure/container-apps-deploy-action@v1

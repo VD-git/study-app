@@ -106,6 +106,17 @@ jobs:
           az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table
           az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
 
+    - name: Evaluating ContainerApps
+      run: |
+          containerapps=$(az containerapp list --resource-group container --output table)
+          echo "$container_apps"
+
+          if echo "$container_apps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+              echo "Container exists: ${{ env.CONTAINER_APP_NAME }}"
+          else
+              echo "Container does not exist"
+          fi
+
     # - name: Deploy to Azure Container Apps
     #   uses: azure/container-apps-deploy-action@v1
     #   with:
