@@ -8,6 +8,8 @@ env:
     AZURE_CONTAINER_REGISTRY: containerappimages
     CONTAINER_APP_NAME: containerapp
     RESOURCE_GROUP: container
+    LOCATION: eastus2
+    PORT: 8501
 
 jobs:
   build:
@@ -56,12 +58,39 @@ jobs:
           docker stop localtest
           docker rm localtest
 
-    - name: Log in to ACR
-      uses: docker/login-action@v3
+    - name: Log in to Azure
+      uses: azure/login@v2
       with:
-          registry: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
-          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Ensure ACR exists (create if missing)
+      uses: azure/cli@v2
+      with:
+          inlineScript: |
+              echo "Checking if ${{ env.AZURE_CONTAINER_REGISTRY }} exists..."
+              if ! az acr show --name ${{ env.AZURE_CONTAINER_REGISTRY }} --resource-group ${{ env.RESOURCE_GROUP }} &>/dev/null; then
+                  echo "ACR not found. Creating..."
+                  az acr create --name ${{ env.AZURE_CONTAINER_REGISTRY }} --resource-group ${{ env.RESOURCE_GROUP }} --sku Basic --location ${{ env.LOCATION }}
+              else
+                  echo "ACR ${{ env.AZURE_CONTAINER_REGISTRY }} already exists."
+              fi
+
+    - name: Log in to ACR (Before Deploy)
+      run: |
+          az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
+
+          repo_table=$(az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table)
+          echo "$repo_table"
+
+          if echo "$repo_table" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+              echo "Repository found: ${{ env.CONTAINER_APP_NAME }}"
+              az acr repository show-tags \
+                --name "${{ env.AZURE_CONTAINER_REGISTRY }}" \
+                --repository "${{ env.CONTAINER_APP_NAME }}" \
+                --output table
+          else
+              echo "Repository not found or no images available."
+          fi
 
     - name: Build and push container image to ACR
       uses: docker/build-push-action@v6
@@ -72,19 +101,68 @@ jobs:
               ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:latest
           file: ./Dockerfile
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Log in to ACR (After Deploy)
+      run: |
+          az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
+          az acr repository list --name ${{ env.AZURE_CONTAINER_REGISTRY }} --output table
+          az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_APP_NAME }} --output table
 
-    - name: Deploy to Azure Container Apps
-      uses: azure/container-apps-deploy-action@v1
-      with:
-        imageToDeploy: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
-        resourceGroup:  ${{ env.RESOURCE_GROUP }}
-        containerAppName: ${{ env.CONTAINER_APP_NAME }}
-        registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
-        registryUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-        registryPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-        environmentVariables: "DB_USER=${{ secrets.DB_USER }} DB_PORT=${{ secrets.DB_PORT }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} DB_HOST=${{ secrets.DB_HOST }}"
+    - name: Evaluating ContainerApps
+      run: |
+          containerapps=$(az containerapp env list --resource-group container --output table)
+          echo "$containerapps"
+
+          if echo "$containerapps" | grep -wq "${{ env.CONTAINER_APP_NAME }}"; then
+              echo "Container exists: ${{ env.CONTAINER_APP_NAME }}"
+          else
+              echo "Container does not exist"
+              az containerapp env create --name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
+          fi
+
+          echo "Creating the Container App..."
+
+          az containerapp create \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --environment ${{ env.CONTAINER_APP_NAME }} \
+              --image mcr.microsoft.com/azuredocs/containerapps-helloworld:latest \
+              --target-port ${{ env.PORT }} \
+              --ingress external \
+              --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
+              --registry-identity system \
+              --env-vars \
+                    DB_USER=${{ secrets.DB_USER }}\
+                    DB_PORT=${{ secrets.DB_PORT }}\
+                    DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
+                    DB_NAME=${{ secrets.DB_NAME }}\
+                    DB_HOST=${{ secrets.DB_HOST }}\
+              --query properties.configuration.ingress.fqdn \
+              --output tsv
+
+            echo "Container App was created."
+
+            echo "Updating Role of Service Principal..."
+
+            az role assignment create \
+              --assignee $(az containerapp identity show \
+                --name ${{ env.CONTAINER_APP_NAME }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --query principalId -o tsv) \
+              --role acrpull \
+              --scope $(az acr show \
+                --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --query id -o tsv)
+
+            echo "Updated Role."
+
+            echo "Updating Image of the Container App..."
+
+            az containerapp update \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
+              --output tsv
+
+            echo "Updated Image."
               

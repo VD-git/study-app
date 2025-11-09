@@ -72,16 +72,11 @@ def convert_to_sql(events: List[dict]) -> List[dict]:
 
 class SQLConnection:
     def __init__(self):
-        # self.POSTGRES_USER = st.secrets['postgres']['user']
-        # self.POSTGRES_PASSWORD = st.secrets['postgres']['password']
-        # self.POSTGRES_DB = st.secrets['postgres']['dbname']
-        # self.POSTGRES_HOST = st.secrets['postgres']['host']
-        # self.POSTGRES_PORT = st.secrets['postgres']['port']
-        self.POSTGRES_USER = os.getenv('DB_USER')
-        self.POSTGRES_PASSWORD = os.getenv('DB_PASSWORD')
-        self.POSTGRES_DB = os.getenv('DB_NAME')
-        self.POSTGRES_HOST = os.getenv('DB_HOST')
-        self.POSTGRES_PORT = os.getenv('DB_PORT')
+        self.POSTGRES_USER = os.getenv("DB_USER") or st.secrets["postgres"]["user"]
+        self.POSTGRES_PASSWORD = os.getenv('DB_PASSWORD') or st.secrets['postgres']['password']
+        self.POSTGRES_DB = os.getenv('DB_NAME') or st.secrets['postgres']['dbname']
+        self.POSTGRES_HOST = os.getenv('DB_HOST') or st.secrets['postgres']['host']
+        self.POSTGRES_PORT = os.getenv('DB_PORT') or st.secrets['postgres']['port']
         self.DATABASE_URL = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         self.engine = create_engine(self.DATABASE_URL)
         self.create_table_sql_query = text("""
