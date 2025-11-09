@@ -42,9 +42,9 @@ In order to be able to access the image inside the ACR, it is needed for the Ser
 
 ## Step 3 — Deleting resources inside resource group
 
-Avoing extra costs, it is possible to exclude the resources inside the resource group created. If it is run again everything will be recreated (just keep same resource group empty and service principal).
-
-Trigger the console o the database in https://console.aiven.io/
+- Open the database console at Aiven Console: https://console.aiven.io/ (Since it’s a free tier service, it may enter sleep mode after some time);
+- To avoid unnecessary costs, you can safely delete all resources inside the created resource group. If you run the workflow again, everything will be automatically recreated. Just keep the same empty resource group and the Service Principal created in steps 1 and 2.
+  ![Excluding Resources Inside Resource Group](images/excluding_resources.JPG)
 
 
 
