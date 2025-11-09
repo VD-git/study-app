@@ -5,8 +5,8 @@ on:
     branches: [ "deploy", "master" ]
 
 env:
-    AZURE_CONTAINER_REGISTRY: containerappimages8
-    CONTAINER_APP_NAME: containerapp8
+    AZURE_CONTAINER_REGISTRY: containerappimages9
+    CONTAINER_APP_NAME: containerapp9
     RESOURCE_GROUP: container
     LOCATION: eastus2
     PORT: 8501
@@ -124,10 +124,16 @@ jobs:
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --environment ${{ env.CONTAINER_APP_NAME }} \
               --image mcr.microsoft.com/azuredocs/containerapps-helloworld:latest \
-              --target-port 80 \
+              --target-port ${{ env.PORT }} \
               --ingress external \
               --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
               --registry-identity system \
+              --env-vars \
+                    DB_USER=${{ secrets.DB_USER }}\
+                    DB_PORT=${{ secrets.DB_PORT }}\
+                    DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
+                    DB_NAME=${{ secrets.DB_NAME }}\
+                    DB_HOST=${{ secrets.DB_HOST }}
               --query properties.configuration.ingress.fqdn \
               --output tsv
 
@@ -146,14 +152,6 @@ jobs:
               --name ${{ env.CONTAINER_APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
-              --target-port ${{ env.PORT }} \
-              --registry-server ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io \
-              --env-vars \
-                    DB_USER=${{ secrets.DB_USER }}\
-                    DB_PORT=${{ secrets.DB_PORT }}\
-                    DB_PASSWORD=${{ secrets.DB_PASSWORD }}\
-                    DB_NAME=${{ secrets.DB_NAME }}\
-                    DB_HOST=${{ secrets.DB_HOST }}
               --query properties.configuration.ingress.fqdn \
               --output tsv
 
