@@ -28,3 +28,23 @@ That is going to generate JSON as following:
 ```
 
 Which will be saved in secrets from Github Actions as AZURE_CREDENTIALS
+
+## Step 2 — Update Role of Service Principal
+
+```bash
+az role assignment create \
+  --assignee "<clientId>" \
+  --role "User Access Administrator"\
+  --scope /subscriptions/<YOUR_SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>
+```
+
+In order to be able to access the image inside the ACR, it is needed for the Service Principal to have User Access Administrator as a role
+
+## Step 3 — Deleting resources inside resource group
+
+Avoing extra costs, it is possible to exclude the resources inside the resource group created. If it is run again everything will be recreated (just keep same resource group empty and service principal).
+
+Trigger the console o the database in https://console.aiven.io/
+
+
+
